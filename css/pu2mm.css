@@ -1,0 +1,123 @@
+html, body {
+  margin:0;
+}
+body {
+  margin: 0;
+  padding: 15px;
+  font-family: sans-serif;
+  background-color: rgb(247, 247, 247);
+}
+
+h1 {
+  font-weight: bold;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  width: 100%;
+  margin: -15px 0 0 -15px;
+  padding: 15px;
+  background-color: lightsteelblue;
+  border-bottom: 1px solid black;
+  box-shadow: 0 2px 2px 1px #888;
+}
+
+h2 {
+  width: 100%;
+  margin: 10px 0 10px -15px;
+  padding: 5px;
+  background-color: lightgray;
+  border-bottom: 1px solid black;
+  border-top: 1px solid rgb(186, 186, 186);
+  box-shadow: 0 2px 2px 1px #888;
+}
+
+button {
+  border: 1px solid #777;
+  border-radius: 3px;
+  padding: 3px 8px;
+  margin: 2px;
+  background: #E4E4E4;
+  font-size: 13px;
+  text-align: center;
+}
+
+button:hover {
+  background-color: #c4e2a5;
+}
+input[type=text],
+input[type=password] {
+  padding: 1px;
+  margin: 0;
+  font-size: 13px;
+}
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+/* Github link */
+.github-corner:hover .octo-arm {
+  animation: octocat-wave 560ms ease-in-out
+}
+@keyframes octocat-wave {
+  0%, 100% {
+    transform: rotate(0)
+  }
+  20%, 60% {
+    transform: rotate(-25deg)
+  }
+  40%,80% {
+    transform: rotate(10deg)
+  }
+}
+@media (max-width:500px) {
+  .github-corner:hover .octo-arm {
+    animation: none
+  }
+  .github-corner .octo-arm {
+    animation: octocat-wave 560ms ease-in-out
+  }
+}
+/* -- */
+
+
+button:active {
+  color: white;
+}
+
+#about {
+  float: right;
+}
+
+#about a {
+  color: white;
+  text-decoration: none;
+}
+
+.hidden {
+  display: none;
+}
+
+#status {
+  margin: 10px 10px;
+  display: block;
+  background: #ddd;
+}
+.status-info {
+  color: black;
+}
+.error {
+  color: red;
+}
+
+table tr {
+  vertical-align: top;
+}
+
+table button {
+  margin: 10px 5px;
+}
