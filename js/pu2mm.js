@@ -151,9 +151,14 @@ convertBtn.onclick = function() {
   // Line breaks
   v = v.replace(/\\n/g, "<br>")
   // Participants
-  v = replaceLine(v, /(actor|boundary|control|entity|database|collections|queue|participant)(\s+.*)/, "participant$2")
-  v = replaceLine(v, /^participant\s+(\S+)\s*[#\d\w]*$/, "MMD_participant $1")
-  v = replaceLine(v, /^participant\s+(\S+)\s*order\s.*$/, "MMD_participant $1")
+  v = replaceLine(v, /^(actor|boundary|control|entity|database|collections|queue|participant)(\s+.*)/, "participant$2")
+  // .. remove participant's color
+  v = replaceLine(v, /^participant\s+(.+)\s*[#\d\w]*\s*$/, "participant $1")
+  // .. remove participant's order
+  v = replaceLine(v, /^participant\s+(.+)\s*order\s.*$/, "participant $1")
+  // .. without alias
+  v = replaceLine(v, /^participant\s+(\S+)\s*$/, "MMD_participant $1")
+  // .. with alias
   v = replaceLine(v, /^participant\s+\"?([^\"]+)\"?\s+as\s+(\S+)\s*[#\d\w]*$/, "MMD_participant $2 as $1")
   let participants = [], firstParticipant, lastParticipant
   let mmp = v.match(/MMD_participant[ \t]+(\w+)/g)
@@ -195,7 +200,7 @@ convertBtn.onclick = function() {
   // return ??
   // Groups
   v = replaceLine(v, /^group[ \t]+(.*)$/g,
-        `rect rgb(240,240,240)\n  note over ${firstParticipant},${lastParticipant}: $2`)
+        `rect rgb(240,240,240)\n  note over ${firstParticipant},${lastParticipant}: $1`)
   // Divider
   v = replaceLine(v, /^==(.*)==([ \t])*$/g,
         `note over ${firstParticipant},${lastParticipant}: $1`)

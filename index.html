@@ -41,66 +41,54 @@ header first part
 
 participant Participant as Foo
 actor       "this is an Actor"       as Foo1
-boundary    "this is a Boundary"    as Foo2
+boundary    "this is a Boundary\nwith long name"    as Foo2 order 100 #555
 control     Control     as Foo3
 entity      Entity      as Foo4 order 30
 database    Database    as Foo5 order 10
-collections Collections as Foo6 order 20
-queue       Queue       as Foo7
+collections Collections as Foo6 order 20 #res
+queue       Queue       as Foo7 #7F2
 
-actor Bob #red
-' The only difference between actor
-'and participant is the drawing
-participant Alice
-participant "I have a really\nlong name" as L #99FF99
+group First authentication
+  Foo -> Foo1 : To actor
+  Foo -> Foo2 : To boundary
+  Foo -> Foo3 : To control
+end
 
-Foo -> Foo1 : To actor
-Foo -> Foo2 : To boundary
-Foo -> Foo3 : To control
 Foo -> Foo4 : To entity
+== This is a break ==
 Foo -> Foo5 : To database
+...
 Foo -> Foo6 : To collections
+... time goes by ...
 Foo -> Foo7: To queue
 
   ' this is a comment
-  == This is a break ==
 
-Alice->Bob: Authentication Request
-Bob->Alice: Authentication Response
-Bob->L: Log transaction
-activate L
-Bob<--L: response
-destroy L
+Foo1 -> Foo1: compute
+Foo2 <-> Foo3: bidi
+
+group Authentication
+  Foo->Foo3: Authentication Request
+  activate Foo3
+  Foo<--Foo3: Authentication Response
+  destroy Foo3
+end
 
 note left
-  Left of Bob
+  Left of control
 end note
 note right
-  Right of L
+  Right of participant
 end note
+
 note left of Foo
   left
   of
-  Foo
+  participant
 end note
 note over Foo1,Foo3
-  over 1 and 3
+  over actor and control
 end note
-...
-
-group First authentication
-  Alice -> Bob: Authentication Request
-  activate Bob
-  Bob --> Alice: Authentication Response
-  deactivate Bob
-end
-
-... time goes by ...
-
-group Second authentication
-  Alice -> Bob: Another authentication Request
-  Alice <-- Bob: Another authentication Response
-end
 
 @enduml
 </textarea>
