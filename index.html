@@ -29,6 +29,7 @@
       <button type="button" id="convert">Convert PlantUml</button>
       <button type="button" id="render">Render Mermaid</button>
       <span id="info"></span>
+      <button id="delete" title="Delete text and diagram">⨯</button>
       <br>
       <textarea id="input" rows="30" cols="80">
 @startuml
@@ -60,11 +61,12 @@ Foo -> Foo5 : To database
 ...
 Foo -> Foo6 : To collections
 ... time goes by ...
-Foo -> Foo7: To queue
+Foo ->> Foo7: To queue
 
   ' this is a comment
 
 Foo1 -> Foo1: compute
+note right: internal process
 Foo2 <-> Foo3: bidi
 
 group Authentication
@@ -94,7 +96,7 @@ end note
 </textarea>
     </td>
     <td>
-      <button type="button" id="focus"><span class="focus">🔍</span><span class="focus" style="display:none">⨯</span></button><br>
+      <button type="button" id="focus"><span class="focus" title="Expand diagram">🔍</span><span class="focus" style="display:none" title="Show edit area">🖊</span></button><br>
       <span id="output">Click "Convert" or "Render" buttons on the left to view the diagram here</span>
     </td>
   </tr>

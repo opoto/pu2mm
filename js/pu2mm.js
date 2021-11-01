@@ -5,6 +5,10 @@ var renderBtn = document.getElementById("render")
 var convertBtn = document.getElementById("convert")
 var focusBtn = document.getElementById("focus")
 var info = document.getElementById("info")
+document.getElementById("delete").onclick = () => {
+  input.value =""
+  output.innerHTML = ""
+}
 
 mermaid.initialize({
   // theme: 'forest',
@@ -92,16 +96,24 @@ function replaceNotes(v) {
       }
     }
   }
+  function searchSingleLineNote(colon, txt) {
+    if (colon) {
+      return txt ? txt : ""
+    }
+    return undefined
+  }
   while (i < lines.length ) {
     l = lines[i++]
     let indent = l.match(/^[ \t]+/);
     let trimmed = l.trim()
+    let note
     if (trimmed.startsWith("note")) {
       let side, who
-      let matches = trimmed.match(/^note\s+(left|right)\s*$/i)
+      let matches = trimmed.match(/^note\s+(left|right)\s*(:?)(.*)$/i)
       if (matches) {
         side = matches[1].toLowerCase() + " of"
         who = searchWho(side)
+        note = searchSingleLineNote(matches[2], matches[3])
       } else {
         matches = trimmed.match(/^note\s+over\s*(\S+\s*,\s*\S+)\s*$/i)
         if (matches) {
@@ -115,14 +127,17 @@ function replaceNotes(v) {
           }
         }
       }
-      let ended = false
-      let note = ""
-      while (i < lines.length && !ended) {
-        let ln = lines[i++]
-        if (ln.search(/^\s*end\s*note\s*$/) >= 0) {
-          ended = true
-        } else {
-          note += (note ? "<br>" : "") + ln.trim()
+      if (typeof note == "undefined") {
+        // multi line note
+        let ended = false
+        note = ""
+        while (i < lines.length && !ended) {
+          let ln = lines[i++]
+          if (ln.search(/^\s*end\s*note\s*$/) >= 0) {
+            ended = true
+          } else {
+            note += (note ? "<br>" : "") + ln.trim()
+          }
         }
       }
       res += `${indent?indent[0]:""}note ${side} ${who}: ${note} \n`
