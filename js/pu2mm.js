@@ -15,6 +15,12 @@ mermaid.initialize({
   startOnLoad: false
 })
 
+function showError(err) {
+  output.innerHTML = "<div class='error'>" + err + ", " + hash + "</div>"
+}
+
+mermaid.parseError = showError
+
 function showInfo(msg) {
   if (msg) {
     info.innerText = msg
@@ -33,13 +39,14 @@ focusBtn.onclick = function() {
 }
 
 renderBtn.onclick = function() {
-  mermaid.render('whatisthis', input.value, function(svgCode) {
-    output.innerHTML = svgCode
-  })
-}
-
-mermaid.mermaidAPI.parseError = function(err, hash){
-  output.innerHTML = "<div class='error'>" + err + ", " + hash + "</div>";
+  if (mermaid.parse(input.value))
+  try {
+    mermaid.render('diagram', input.value, (svgCode) => {
+      output.innerHTML = svgCode
+    })
+  } catch (error) {
+    showError(error)
+  }
 }
 
 function replaceLine1(l, regex, by, modifier) {
@@ -54,10 +61,75 @@ function replaceLine(v, re, by) {
   let res = ""
   for (l of v.split("\n")) {
     let indent = l.match(/^[ \t]+/);
-    l = l.trim()
-    let patched = l.replace(re, by)
-    res += indent ? indent[0] + patched : patched
-    res += "\n"
+    let trimmed = l.trim()
+    if (by != null) {
+      // try to replace in line
+      let patched = trimmed.replace(re, by)
+      res += indent ? indent[0] + patched : patched
+      res += "\n"
+    } else {
+      // matching line should be removed (commented out as "TBD")
+      if (trimmed.search(re) >= 0) {
+        res += "%% [TBD] "
+      }
+      res += l + "\n"
+    }
+  }
+  return res
+}
+
+function replaceNotes(v) {
+  let res = ""
+  let lines = v.split("\n")
+  let i = 0
+  function searchWho(side) {
+    let j = i-2
+    while (j>0) {
+      pl = lines[j--]
+      let message = pl.match(/^\s*([^\s\-]+)\s*\-+\>+\s*([^\s:]+)\s*/)
+      if (message) {
+        return message[side.startsWith('left') ? 1 : 2]
+      }
+    }
+  }
+  while (i < lines.length ) {
+    l = lines[i++]
+    let indent = l.match(/^[ \t]+/);
+    let trimmed = l.trim()
+    if (trimmed.startsWith("note")) {
+      let side, who
+      let matches = trimmed.match(/^note\s+(left|right)\s*$/i)
+      if (matches) {
+        side = matches[1].toLowerCase() + " of"
+        who = searchWho(side)
+      } else {
+        matches = trimmed.match(/^note\s+over\s*(\S+\s*,\s*\S+)\s*$/i)
+        if (matches) {
+          side = "over"
+          who = matches[1]
+        } else {
+          matches = trimmed.match(/^note\s+(left|right)\s*of\s+(\S+)\s*$/i)
+          if (matches) {
+            side = matches[1].toLowerCase() + " of"
+            who = matches[2]
+          }
+        }
+      }
+      let ended = false
+      let note = ""
+      while (i < lines.length && !ended) {
+        let ln = lines[i++]
+        if (ln.search(/^\s*end\s*note\s*$/) >= 0) {
+          ended = true
+        } else {
+          note += (note ? "<br>" : "") + ln.trim()
+        }
+      }
+      res += `${indent?indent[0]:""}note ${side} ${who}: ${note} \n`
+    } else {
+      previous = l
+      res += l + "\n"
+    }
   }
   return res
 }
@@ -78,8 +150,6 @@ convertBtn.onclick = function() {
   v = v.replace(/@enduml/, "")
   // Line breaks
   v = v.replace(/\\n/g, "<br>")
-  // skinning
-  v = replaceLine(v, /skinparam\s.*$/, "")
   // Participants
   v = replaceLine(v, /(actor|boundary|control|entity|database|collections|queue|participant)(\s+.*)/, "participant$2")
   v = replaceLine(v, /^participant\s+(\S+)\s*[#\d\w]*$/, "MMD_participant $1")
@@ -95,7 +165,7 @@ convertBtn.onclick = function() {
       lastParticipant = p
     })
   } else {
-    mmp = v.match(/\n[ \t]+(\w+)[ \t]+<*-+/g)
+    mmp = v.match(/\n[ \t]*(\w+)[ \t]*<*-+/g)
     if (mmp) {
       mmp.forEach( e => {
         let p = e.trim().split(" ")[0]
@@ -120,25 +190,32 @@ convertBtn.onclick = function() {
   v = v.replace(/([ \t\w])<(-+)>([ \t\w])/g, "$1$2>$3")
   v = v.replace(/([ \t]*)(\w+)([ \t]*)<<(-+)([ \t]*)(\w+)/g, "$1$6$3$4)$5$2")
   v = v.replace(/([ \t]*)(\w+)([ \t]*)<(-+)([ \t]*)(\w+)/g, "$1$6$3$4>>$5$2")
+  // Notes
+  v = replaceNotes(v)
   // return ??
   // Groups
-  v = v.replace(/\n([ \t]*)group[ \t]+(.*)\n/g,
-        "\n$1rect rgb(240,240,240)\n$1  note over " + firstParticipant + "," + lastParticipant + ": $2\n")
-  // Notes TODO
+  v = replaceLine(v, /^group[ \t]+(.*)$/g,
+        `rect rgb(240,240,240)\n  note over ${firstParticipant},${lastParticipant}: $2`)
   // Divider
-  v = v.replace(/\n([ \t\w])*==(.*)==([ \t\w])*\n/g,
-        "\n$1  note over " + firstParticipant + "," + lastParticipant + ": $2\n")
+  v = replaceLine(v, /^==(.*)==([ \t])*$/g,
+        `note over ${firstParticipant},${lastParticipant}: $1`)
   // Delay
   v = replaceLine(v, /^\.\.\.[ \t]*$/g,
-        "note over " + firstParticipant + "," + lastParticipant + ": ...")
-  v = replaceLine(v, /^\.\.\.(.*)\.\.\.[ \t]*$/g,
-        "note over " + firstParticipant + "," + lastParticipant + ": $1")
+    `note over ${firstParticipant},${lastParticipant}: ... later`)
+    v = replaceLine(v, /^\.\.\.(.*)\.\.\.[ \t]*$/g,
+    `note over ${firstParticipant},${lastParticipant}: ...$1`)
   // Space
-  v = replaceLine(v, /^|||[ \t]*$/g, "")
-  v = replaceLine(v, /^||\d+||[ \t]*$/g, "")
-  // [de]activation
-  v = replaceLine(v, /^(activate|deactivate|destroy)[ \t].*$/g, "")
+  v = replaceLine(v, /^\|\|\|[ \t]*$/g, null)
+  v = replaceLine(v, /^\|\|\d+\|\|[ \t]*$/g, null)
+  // destroy
+  v = replaceLine(v, /^destroy([ \t])/g, "deactivate$1")
   // [de]activation shortcuts?
+  // Title
+  v = replaceLine(v, /^title[ \t]+(.*)$/g,
+      `note over ${firstParticipant}: $1`)
+  // Unsupported features
+  v = replaceLine(v, /^(header|footer|skinparam|newpage)[ \t].*$/g, null)
+
 
   input.value = v.trim()
   renderBtn.click()

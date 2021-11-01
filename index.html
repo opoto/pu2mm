@@ -36,13 +36,16 @@ autonumber
 
 skinparam sequenceMessageAlign right
 
+title This is the diagram's title
+header first part
+
 participant Participant as Foo
 actor       "this is an Actor"       as Foo1
 boundary    "this is a Boundary"    as Foo2
 control     Control     as Foo3
-entity      Entity      as Foo4
-database    Database    as Foo5
-collections Collections as Foo6
+entity      Entity      as Foo4 order 30
+database    Database    as Foo5 order 10
+collections Collections as Foo6 order 20
 queue       Queue       as Foo7
 
 actor Bob #red
@@ -50,10 +53,6 @@ actor Bob #red
 'and participant is the drawing
 participant Alice
 participant "I have a really\nlong name" as L #99FF99
-
-participant Last order 30
-participant Middle order 20
-participant First order 10
 
 Foo -> Foo1 : To actor
 Foo -> Foo2 : To boundary
@@ -63,7 +62,7 @@ Foo -> Foo5 : To database
 Foo -> Foo6 : To collections
 Foo -> Foo7: To queue
 
-  ' let's try something new
+  ' this is a comment
   == This is a break ==
 
 Alice->Bob: Authentication Request
@@ -73,6 +72,20 @@ activate L
 Bob<--L: response
 destroy L
 
+note left
+  Left of Bob
+end note
+note right
+  Right of L
+end note
+note left of Foo
+  left
+  of
+  Foo
+end note
+note over Foo1,Foo3
+  over 1 and 3
+end note
 ...
 
 group First authentication
