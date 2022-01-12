@@ -20,10 +20,20 @@ mermaid.initialize({
 })
 
 function showError(err) {
-  output.innerHTML = "<div class='error'>" + err + ", " + hash + "</div>"
+  output.innerHTML = "<div class='error'>" + (err.str ? err.str.replace(/\n/g,"<br>") : err) + "</div>"
 }
 
 mermaid.parseError = showError
+window.onerror = function(messageOrEvent, source, line, row, err) {
+  let msg = messageOrEvent.toString()
+  if (source) {
+    msg += " [" + source + ":" + line + "," + row + "]"
+  }
+  showError(msg)
+  if (err) {
+    console.error(err)
+  }
+}
 
 function showInfo(msg) {
   if (msg) {
@@ -43,11 +53,12 @@ focusBtn.onclick = function() {
 }
 
 renderBtn.onclick = function() {
-  if (mermaid.parse(input.value))
   try {
-    mermaid.render('diagram', input.value, (svgCode) => {
-      output.innerHTML = svgCode
-    })
+    if (mermaid.parse(input.value)) {
+      mermaid.render('diagram', input.value, (svgCode) => {
+        output.innerHTML = svgCode
+      })
+    }
   } catch (error) {
     showError(error)
   }
