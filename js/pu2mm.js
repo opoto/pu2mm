@@ -76,7 +76,7 @@ function replaceLine(v, re, by) {
   let res = ""
   for (l of v.split("\n")) {
     let indent = l.match(/^[ \t]+/);
-    let trimmed = l.trim()
+    let trimmed = l.replace(/^[ \t]+/,"") // arrows with no label need a trailing space
     if (by != null) {
       // try to replace in line
       let patched = trimmed.replace(re, by)
@@ -177,7 +177,7 @@ convertBtn.onclick = function() {
   // Line breaks
   v = v.replace(/\\n/g, "<br>")
   // Participants
-  v = replaceLine(v, /^(actor|boundary|control|entity|database|collections|queue|participant)(\s+.*)/, "participant$2")
+  v = replaceLine(v, /^(actor|boundary|control|entity|database|collections|queue|participant)(\s+.*)/i, "participant$2")
   // .. remove participant's color
   v = replaceLine(v, /^participant\s+(.+)\s*[#\d\w]*\s*$/, "participant $1")
   // .. remove participant's order
@@ -212,15 +212,19 @@ convertBtn.onclick = function() {
   // Participant boxes
   v = v.replace(/\n([ \t]*)end box[ \t]*\n/g, "\n$1%% endbox\n")
   v = v.replace(/\n([ \t]*)box/g, "\n$1%% box")
+  // autonumber does not support parameters
+  v = replaceLine(v, /^\s*autonumber\s.*/g, "autonumber")
   // Comments
   v = v.replace(/\n([ \t]*)'/g, "\n$1%%")
   // Arrows
-  v = v.replace(/([ \t\w])(-+)>>([ \t\w])/g, "$1$2)$3")
-  v = v.replace(/([ \t\w])->([ \t\w])/g, "$1->>$2")
-  v = v.replace(/([ \t\w])(-+)>([ \t\w])/g, "$1$2>>$3")
-  v = v.replace(/([ \t\w])<(-+)>([ \t\w])/g, "$1$2>$3")
-  v = v.replace(/([ \t]*)(\w+)([ \t]*)<<(-+)([ \t]*)(\w+)/g, "$1$6$3$4)$5$2")
-  v = v.replace(/([ \t]*)(\w+)([ \t]*)<(-+)([ \t]*)(\w+)/g, "$1$6$3$4>>$5$2")
+  v = v.replace(/([ \t\w])(\-+)>>([ \t\w])/g, "$1$2)$3")
+  v = v.replace(/([ \t\w])\-\>([ \t\w])/g, "$1->>$2")
+  v = v.replace(/([ \t\w])(\-+)>([ \t\w])/g, "$1$2>>$3")
+  v = v.replace(/([ \t\w])<(\-+)>([ \t\w])/g, "$1$2>$3")
+  v = v.replace(/([ \t\w])(\w+)([ \t]*)<<(\-+)([ \t]*)(\w+)/g, "$1$6$3$4)$5$2")
+  v = v.replace(/([ \t\w])(\w+)([ \t]*)<(\-+)([ \t]*)(\w+)/g, "$1$6$3$4>>$5$2")
+  // Arrow without label
+  v = v.replace(/([ \t]+)([\<\>\-\x]+)([ \t]*)(\w+)[ \t]*\n/g, " $2 $4: \n")
   // Notes
   v = replaceNotes(v)
   // return ??
@@ -245,9 +249,9 @@ convertBtn.onclick = function() {
   v = replaceLine(v, /^title[ \t]+(.*)$/g,
       `note over ${firstParticipant}: $1`)
   // Unsupported features
-  v = replaceLine(v, /^(header|footer|skinparam|newpage)[ \t].*$/g, null)
+  v = replaceLine(v, /^(header|footer|skinparam|newpage)\b.*$/g, null)
 
 
-  input.value = v.trim()
+  input.value = v.replace(/\s*$/,"") + "\n"
   renderBtn.click()
 }
