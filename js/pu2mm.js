@@ -176,8 +176,10 @@ convertBtn.onclick = function() {
   v = v.replace(/@enduml/, "")
   // Line breaks
   v = v.replace(/\\n/g, "<br>")
+  // Actor (stoplight does not support it)
+  v = replaceLine(v, /^(actor)(\s+)(['"])(.*)(['"])/i, "participant$2👤<br><br>$4")
   // Participants
-  v = replaceLine(v, /^(actor|boundary|control|entity|database|collections|queue|participant)(\s+.*)/i, "participant$2")
+  v = replaceLine(v, /^(boundary|control|entity|database|collections|queue|participant)(\s+.*)/i, "participant$2")
   // .. remove participant's color
   v = replaceLine(v, /^participant\s+(.+)\s*[#\d\w]*\s*$/, "participant $1")
   // .. remove participant's order
