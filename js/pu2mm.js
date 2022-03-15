@@ -176,20 +176,18 @@ convertBtn.onclick = function() {
   v = v.replace(/@enduml/, "")
   // Line breaks
   v = v.replace(/\\n/g, "<br>")
-  // Actor (stoplight does not support it)
-  v = replaceLine(v, /^(actor)(\s+)(['"])(.*)(['"])/i, "participant$2👤<br><br>$4")
   // Participants
   v = replaceLine(v, /^(boundary|control|entity|database|collections|queue|participant)(\s+.*)/i, "participant$2")
   // .. remove participant's color
-  v = replaceLine(v, /^participant\s+(.+)\s*[#\d\w]*\s*$/, "participant $1")
+  v = replaceLine(v, /^(participant|actor)\s+(.+)\s*[#\d\w]*\s*$/, "$1 $2")
   // .. remove participant's order
-  v = replaceLine(v, /^participant\s+(.+)\s*order\s.*$/, "participant $1")
+  v = replaceLine(v, /^(participant|actor)\s+(.+)\s*order\s.*$/, "$1 $2")
   // .. without alias
-  v = replaceLine(v, /^participant\s+(\S+)\s*$/, "MMD_participant $1")
+  v = replaceLine(v, /^(participant|actor)\s+(\S+)\s*$/, "MMD_$1 $2")
   // .. with alias
-  v = replaceLine(v, /^participant\s+\"?([^\"]+)\"?\s+as\s+(\S+)\s*[#\d\w]*$/, "MMD_participant $2 as $1")
+  v = replaceLine(v, /^(participant|actor)\s+\"?([^\"]+)\"?\s+as\s+(\S+)\s*[#\d\w]*$/, "MMD_$1 $3 as $2")
   let participants = [], firstParticipant, lastParticipant
-  let mmp = v.match(/MMD_participant[ \t]+(\w+)/g)
+  let mmp = v.match(/MMD_(participant|actor)[ \t]+(\w+)/g)
   if (mmp) {
     mmp.forEach( e => {
       let p = e.split(" ")[1]
@@ -210,7 +208,7 @@ convertBtn.onclick = function() {
       })
     }
   }
-  v = v.replace(/\bMMD_participant\b/g, "participant")
+  v = v.replace(/\bMMD_(participant|actor)\b/g, "$1")
   // Participant boxes
   v = v.replace(/\n([ \t]*)end box[ \t]*\n/g, "\n$1%% endbox\n")
   v = v.replace(/\n([ \t]*)box/g, "\n$1%% box")
