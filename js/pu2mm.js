@@ -55,8 +55,9 @@ focusBtn.onclick = function() {
 renderBtn.onclick = function() {
   try {
     if (mermaid.parse(input.value)) {
-      mermaid.render('diagram', input.value, (svgCode) => {
-        output.innerHTML = svgCode
+      mermaid.render('diagram', input.value)
+      .then((res) => {
+        output.innerHTML = res.svg
       })
     }
   } catch (error) {
@@ -230,7 +231,7 @@ convertBtn.onclick = function() {
   // return ??
   // Groups
   v = replaceLine(v, /^group[ \t]+(.*)$/g,
-        `rect rgb(240,240,240)\n  note over ${firstParticipant},${lastParticipant}: $1`)
+        `rect rgb(125,125,125,.2)\n  note over ${firstParticipant},${lastParticipant}: $1`)
   // Divider
   v = replaceLine(v, /^==(.*)==([ \t])*$/g,
         `note over ${firstParticipant},${lastParticipant}: $1`)

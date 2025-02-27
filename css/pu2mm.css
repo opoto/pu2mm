@@ -102,6 +102,17 @@ button:active {
   display: none;
 }
 
+#main {
+  width: 100%;
+}
+#main td {
+  width: 50%;
+}
+#output {
+  display: inline-block;
+  width: 100%;
+}
+
 #status {
   margin: 10px 10px;
   display: block;
