@@ -200,28 +200,7 @@ convertBtn.onclick = function() {
   v = replaceLine(v, /^(participant|actor)\s+(\S+)\s*$/, "MMD_$1 $2")
   // .. with alias
   v = replaceLine(v, /^(participant|actor)\s+\"?([^\"]+)\"?\s+as\s+(\S+)\s*[#\d\w]*$/, "MMD_$1 $3 as $2")
-  let participants = [], firstParticipant, lastParticipant
-  let mmp = v.match(/MMD_(participant|actor)[ \t]+(\w+)/g)
-  if (mmp) {
-    mmp.forEach( e => {
-      let p = e.split(" ")[1]
-      participants.push(p)
-      firstParticipant = firstParticipant || p
-      lastParticipant = p
-    })
-  } else {
-    mmp = v.match(/\n[ \t]*(\w+)[ \t]*<*-+/g)
-    if (mmp) {
-      mmp.forEach( e => {
-        let p = e.trim().split(" ")[0]
-        if (participants.indexOf(p) < 0) {
-          participants.push(p)
-        }
-        firstParticipant = participants[0]
-        lastParticipant = participants[participants.length-1]
-      })
-    }
-  }
+
   v = v.replace(/\bMMD_(participant|actor)\b/g, "$1")
   // Participant boxes
   v = v.replace(/\n([ \t]*)end box[ \t]*\n/g, "\n$1end\n")
@@ -235,10 +214,36 @@ convertBtn.onclick = function() {
   v = v.replace(/([ \t\w])\-\>([ \t\w])/g, "$1->>$2")
   v = v.replace(/([ \t\w])(\-+)>([ \t\w])/g, "$1$2>>$3")
   v = v.replace(/([ \t\w])<(\-+)>([ \t\w])/g, "$1$2>$3")
-  v = v.replace(/([ \t\w])(\w+)([ \t]*)<<(\-+)([ \t]*)(\w+)/g, "$1$6$3$4)$5$2")
-  v = v.replace(/([ \t\w])(\w+)([ \t]*)<(\-+)([ \t]*)(\w+)/g, "$1$6$3$4>>$5$2")
+  // ensure arrows are left to right
+  v = v.replace(/([ \t]*)(\w+)([ \t]*)<<(\-+)([ \t]*)(\w+)/g, "$1$6$3$4)$5$2")
+  v = v.replace(/([ \t]*)(\w+)([ \t]*)<(\-+)([ \t]*)(\w+)/g, "$1$6$3$4>>$5$2")
+  v = v.replace(/([ \t]*)(\w+)([ \t]*)x(\-+)([ \t]*)(\w+)/g, "$1$6$3$4x$5$2")
   // Arrow without label
-  v = v.replace(/([ \t]+)([\<\>\-\x]+)([ \t]*)(\w+)[ \t]*\n/g, " $2 $4: \n")
+  v = replaceLine(v, /^([ \t]*)(\w+)([ \t]*)([<>\-x)]+)([ \t]*)(\w+)[ \t]*:?[ \t]*$/, "$1$2$4$6: -")
+
+  let participants = [], firstParticipant, lastParticipant
+  // declared participants
+  let mmp = v.match(/(participant|actor)[ \t]+(\w+)/g)
+  if (mmp) {
+    mmp.forEach( e => {
+      let p = e.split(" ")[1]
+      participants.push(p)
+    })
+  }
+
+  // undeclared participants
+  mmp = v.match(/\n[ \t]*(\w+)[ \t]*([<>\-x)]+)([ \t]*)(\w+)[ \t]*/g)
+  if (mmp) {
+    mmp.forEach( e => {
+      let p1p2 = e.replace(/\n[ \t]*(\w+)[ \t]*[<>\-x)]+[ \t]*(\w+)[ \t]*/, "$1,$2")?.split(",")
+      p1p2.forEach( p => {
+        participants.includes(p) || participants.push(p)
+      })
+    })
+  }
+  firstParticipant = participants[0]
+  lastParticipant = participants[participants.length-1]
+
   // Notes
   v = replaceNotes(v)
   // return ??
