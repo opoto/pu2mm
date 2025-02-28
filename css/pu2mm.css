@@ -43,12 +43,7 @@ button {
 button:hover {
   background-color: #c4e2a5;
 }
-input[type=text],
-input[type=password] {
-  padding: 1px;
-  margin: 0;
-  font-size: 13px;
-}
+
 .noselect {
   -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
@@ -107,6 +102,9 @@ button:active {
 }
 #main td {
   width: 50%;
+}
+#input {
+  width: 100%;
 }
 #output {
   display: inline-block;

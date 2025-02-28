@@ -59,6 +59,9 @@ renderBtn.onclick = function() {
       .then((res) => {
         output.innerHTML = res.svg
       })
+      .catch ((error) => {
+        showError(error)
+      });
     }
   } catch (error) {
     showError(error)
@@ -110,32 +113,42 @@ function replaceNotes(v) {
   }
   function searchSingleLineNote(colon, txt) {
     if (colon) {
-      return txt ? txt : ""
+      return txt ? txt.trim() : ""
     }
     return undefined
+  }
+  function max2(csv) {
+    let items = csv.split(',');
+    if (items.length > 2) {
+      return items[0] + ", " + items.slice(-1)[0]
+    } else {
+      return csv
+    }
   }
   while (i < lines.length ) {
     l = lines[i++]
     let indent = l.match(/^[ \t]+/);
     let trimmed = l.trim()
     let note
-    if (trimmed.startsWith("note")) {
+    if (trimmed.startsWith("note") || trimmed.startsWith("ref")) {
       let side, who
-      let matches = trimmed.match(/^note\s+(left|right)\s*(:?)(.*)$/i)
+      let matches = trimmed.match(/^(note|ref)\s+(left|right)\s*(:?)(.*)$/i)
       if (matches) {
-        side = matches[1].toLowerCase() + " of"
+        side = matches[2].toLowerCase() + " of"
         who = searchWho(side)
-        note = searchSingleLineNote(matches[2], matches[3])
+        note = searchSingleLineNote(matches[3], matches[4])
       } else {
-        matches = trimmed.match(/^note\s+over\s*(\S+\s*,\s*\S+)\s*$/i)
+        matches = trimmed.match(/^(note|ref)\s+over\s*([^:]+)\s*(:?)(.*)$/i)
         if (matches) {
           side = "over"
-          who = matches[1]
+          who = max2(matches[2]) // ref can have more than 2 actors
+          note = searchSingleLineNote(matches[3], matches[4])
         } else {
-          matches = trimmed.match(/^note\s+(left|right)\s*of\s+(\S+)\s*$/i)
+          matches = trimmed.match(/^(note|ref)\s+(left|right)\s*of\s+(\S+)\s*(:?)(.*)$/i)
           if (matches) {
-            side = matches[1].toLowerCase() + " of"
-            who = matches[2]
+            side = matches[2].toLowerCase() + " of"
+            who = matches[3]
+            note = searchSingleLineNote(matches[4], matches[5])
           }
         }
       }
@@ -211,8 +224,8 @@ convertBtn.onclick = function() {
   }
   v = v.replace(/\bMMD_(participant|actor)\b/g, "$1")
   // Participant boxes
-  v = v.replace(/\n([ \t]*)end box[ \t]*\n/g, "\n$1%% endbox\n")
-  v = v.replace(/\n([ \t]*)box/g, "\n$1%% box")
+  v = v.replace(/\n([ \t]*)end box[ \t]*\n/g, "\n$1end\n")
+  v = v.replace(/\n([ \t]*)box/g, "\n$1box")
   // autonumber does not support parameters
   v = replaceLine(v, /^\s*autonumber\s.*/g, "autonumber")
   // Comments
