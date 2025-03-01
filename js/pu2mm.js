@@ -97,6 +97,17 @@ function replaceLine(v, re, by) {
   return res
 }
 
+function matchLines(v, re) {
+  let res = []
+  for (let l of v.split("\n")) {
+    let found = l.match(re);
+    if (found) {
+      res.push(... found)
+    }
+  }
+  return res
+}
+
 function replaceNotes(v) {
   let res = ""
   let lines = v.split("\n")
@@ -132,23 +143,23 @@ function replaceNotes(v) {
     let note
     if (trimmed.startsWith("note") || trimmed.startsWith("ref")) {
       let side, who
-      let matches = trimmed.match(/^(note|ref)\s+(left|right)\s*(:?)(.*)$/i)
+      let matches = trimmed.match(/^(note|ref)\s+(left|right)\s*(#\w+)?\s*(:?)(.*)$/i)
       if (matches) {
         side = matches[2].toLowerCase() + " of"
         who = searchWho(side)
-        note = searchSingleLineNote(matches[3], matches[4])
+        note = searchSingleLineNote(matches[4], matches[5])
       } else {
-        matches = trimmed.match(/^(note|ref)\s+over\s*([^:]+)\s*(:?)(.*)$/i)
+        matches = trimmed.match(/^(note|ref)\s+over\s*([^:#]+)\s*(#\w+)?\s*(:?)(.*)$/i)
         if (matches) {
           side = "over"
           who = max2(matches[2]) // ref can have more than 2 actors
-          note = searchSingleLineNote(matches[3], matches[4])
+          note = searchSingleLineNote(matches[4], matches[5])
         } else {
-          matches = trimmed.match(/^(note|ref)\s+(left|right)\s*of\s+(\S+)\s*(:?)(.*)$/i)
+          matches = trimmed.match(/^(note|ref)\s+(left|right)\s*of\s+(\S+)\s*(#\w+)?\s*(:?)(.*)$/i)
           if (matches) {
             side = matches[2].toLowerCase() + " of"
             who = matches[3]
-            note = searchSingleLineNote(matches[4], matches[5])
+            note = searchSingleLineNote(matches[5], matches[6])
           }
         }
       }
@@ -201,6 +212,17 @@ convertBtn.onclick = function() {
   // .. with alias
   v = replaceLine(v, /^(participant|actor)\s+\"?([^\"]+)\"?\s+as\s+(\S+)\s*[#\d\w]*$/, "MMD_$1 $3 as $2")
 
+
+  let participants = [], firstParticipant, lastParticipant
+  // declared participants
+  let mmp = matchLines(v, /[ \t]*MMD_(participant|actor)[ \t]+(\w+)/g)
+  if (mmp) {
+    mmp.forEach( e => {
+      let p = e.trim().split(" ")[1]
+      participants.push(p)
+    })
+  }
+
   v = v.replace(/\bMMD_(participant|actor)\b/g, "$1")
   // Participant boxes
   v = v.replace(/\n([ \t]*)end box[ \t]*\n/g, "\n$1end\n")
@@ -221,18 +243,8 @@ convertBtn.onclick = function() {
   // Arrow without label
   v = replaceLine(v, /^([ \t]*)(\w+)([ \t]*)([<>\-x)]+)([ \t]*)(\w+)[ \t]*:?[ \t]*$/, "$1$2$4$6: -")
 
-  let participants = [], firstParticipant, lastParticipant
-  // declared participants
-  let mmp = v.match(/(participant|actor)[ \t]+(\w+)/g)
-  if (mmp) {
-    mmp.forEach( e => {
-      let p = e.split(" ")[1]
-      participants.push(p)
-    })
-  }
-
   // undeclared participants
-  mmp = v.match(/\n[ \t]*(\w+)[ \t]*([<>\-x)]+)([ \t]*)(\w+)[ \t]*/g)
+  mmp = v.match(/\n[ \t]*(\w+)[ \t]*(<*\-\-?[>x)]+)([ \t]*)(\w+)[ \t]*/g)
   if (mmp) {
     mmp.forEach( e => {
       let p1p2 = e.replace(/\n[ \t]*(\w+)[ \t]*[<>\-x)]+[ \t]*(\w+)[ \t]*/, "$1,$2")?.split(",")
@@ -248,8 +260,8 @@ convertBtn.onclick = function() {
   v = replaceNotes(v)
   // return ??
   // Groups
-  v = replaceLine(v, /^group[ \t]+(.*)$/g,
-        `rect rgb(125,125,125,.2)\n  note over ${firstParticipant},${lastParticipant}: $1`)
+  v = replaceLine(v, /^group[ \t]+(#\w+)?\s*(.*)$/g,
+        `rect rgb(125,125,125,.2)\n  note over ${firstParticipant},${lastParticipant}: $2`)
   // Divider
   v = replaceLine(v, /^==(.*)==([ \t])*$/g,
         `note over ${firstParticipant},${lastParticipant}: $1`)
@@ -263,10 +275,14 @@ convertBtn.onclick = function() {
   v = replaceLine(v, /^\|\|\d+\|\|[ \t]*$/g, null)
   // destroy
   v = replaceLine(v, /^destroy([ \t])/g, "deactivate$1")
-  // [de]activation shortcuts?
+
+  // [de]activation
+  // TODO: +/-
+
   // Title
   v = replaceLine(v, /^title[ \t]+(.*)$/g,
       `note over ${firstParticipant}: $1`)
+
   // Unsupported features
   v = replaceLine(v, /^(header|footer|skinparam|newpage)\b.*$/g, null)
 

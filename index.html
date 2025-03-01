@@ -44,12 +44,14 @@ participant Participant as Foo
 actor       "this is an Actor"       as Foo1
 boundary    "this is a Boundary\nwith long name"    as Foo2 order 100 #555
 control     Control     as Foo3
-entity      Entity      as Foo4 order 30
-database    Database    as Foo5 order 10
-collections Collections as Foo6 order 20 #res
-queue       Queue       as Foo7 #7F2
+box insignificant participants are here
+  entity      Entity      as Foo4 order 30
+  database    Database    as Foo5 order 10 #a74
+  collections Collections as Foo6 order 20 
+  queue       Queue       as Foo7 #7F2
+end box
 
-group First authentication
+group #666 First authentication 
   Foo -> Foo1 : To actor
   Foo -> Foo2 : To boundary
   Foo -> Foo3 : To control
@@ -66,7 +68,7 @@ Foo ->> Foo7: To queue
   ' this is a comment
 
 Foo1 -> Foo1: compute
-note right: internal process
+note right #444: internal process
 Foo2 <-> Foo3: bidi
 
 group Authentication
@@ -76,7 +78,7 @@ group Authentication
   destroy Foo3
 end
 
-note left
+note left #643
   Left of control
 end note
 note right
@@ -88,7 +90,7 @@ note left of Foo
   of
   participant
 end note
-note over Foo1,Foo3
+note over Foo1,Foo3 #64f
   over actor and control
 end note
 
