@@ -7,15 +7,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pu2Mm</title>
   <link rel="stylesheet" href="css/pu2mm.css" />
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4XXE44RHRG"></script>
+  <!-- privacy-friendly usage stats -->
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-4XXE44RHRG');
+    // Only load on production environment.
+    if (window.location.host !== 'opoto.github.io')
+        window.goatcounter = {no_onload: true}
   </script>
+  <script data-goatcounter="https://pu2mm.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 
 <body>
@@ -47,11 +45,11 @@ control     Control     as Foo3
 box insignificant participants are here
   entity      Entity      as Foo4 order 30
   database    Database    as Foo5 order 10 #a74
-  collections Collections as Foo6 order 20 
+  collections Collections as Foo6 order 20
   queue       Queue       as Foo7 #7F2
 end box
 
-group #666 First authentication 
+group #666 First authentication
   Foo -> Foo1 : To actor
   Foo -> Foo2 : To boundary
   Foo -> Foo3 : To control
