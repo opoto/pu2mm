@@ -6,12 +6,17 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pu2Mm</title>
-  <link rel="stylesheet" href="css/pu2mm.css" />
+  <link rel="stylesheet" href="css/pu2mm.css">
   <!-- privacy-friendly usage stats -->
   <script>
-    // Only load on production environment.
-    if (window.location.host !== 'opoto.github.io')
-        window.goatcounter = {no_onload: true}
+    // Only load on production environment, and manually opted-out
+    if ((window.location.host !== 'opoto.github.io') ||
+      (localStorage.getItem("goatcounter." + location.host) === "false") ||
+      (localStorage.getItem("goatcounter.ALL") === "false")) {
+      window.goatcounter = {
+        no_onload: true
+      };
+    }
   </script>
   <script data-goatcounter="https://pu2mm.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
